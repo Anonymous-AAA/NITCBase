@@ -17,9 +17,45 @@ int main(int argc, char *argv[]) {
   HeadInfo relCatHeader;
   HeadInfo attrCatHeader;
 
-  // load the headers of both the blocks into relCatHeader and attrCatHeader.
+  // load the header of the RELCAT block into relCatHeader
   // (we will implement these functions later)
   relCatBuffer.getHeader(&relCatHeader);
+
+  // change the Class attribute to Batch for Student relation
+  int currentBlock = ATTRCAT_BLOCK;
+
+  while (currentBlock != INVALID_BLOCKNUM) {
+
+    // create objects for the attribute catalog
+    RecBuffer attrCatBuffer(currentBlock);
+    // load the header of the ATTRCAT block into attrCatHeader
+    attrCatBuffer.getHeader(&attrCatHeader);
+    for (int j = 0; j < attrCatHeader.numEntries; j++) {
+
+      // declare attrCatRecord and load the attribute catalog entry into it
+      Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
+
+      attrCatBuffer.getRecord(attrCatRecord, j);
+
+      if (strcmp(attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal, "Students") == 0 &&
+          strcmp(attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal, "Class") == 0) {
+
+        unsigned char buffer[BLOCK_SIZE];
+        Disk::readBlock(buffer, currentBlock);
+
+        char batch[] = "Batch";
+        int offset = HEADER_SIZE + SLOTMAP_SIZE_RELCAT_ATTRCAT +
+                     (ATTRCAT_NO_ATTRS * ATTR_SIZE * j) +
+                     (ATTRCAT_ATTR_NAME_INDEX * ATTR_SIZE);
+        memcpy(buffer + offset, batch, 6);
+
+        Disk::writeBlock(buffer, currentBlock);
+        break;
+      }
+    }
+
+    currentBlock = attrCatHeader.rblock;
+  }
 
   for (int i = 0; i < relCatHeader.numEntries; i++) {
 
@@ -37,7 +73,9 @@ int main(int argc, char *argv[]) {
 
     while (nextBlock != INVALID_BLOCKNUM) {
 
+      // create objects for the attribute catalog
       RecBuffer attrCatBuffer(nextBlock);
+      // load the header of the ATTRCAT block into attrCatHeader
       attrCatBuffer.getHeader(&attrCatHeader);
       for (int j = 0; j < attrCatHeader.numEntries; j++) {
 

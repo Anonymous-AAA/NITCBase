@@ -17,3 +17,4 @@
 
 # Maybe errors
 - Caution at the end of the stage the total number of attributes can be 20 not till 19
+- Q2 relation name should be Students instead of Student
