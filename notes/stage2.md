@@ -14,3 +14,6 @@
 
 - Each slot stores a single record of a relation.
 - Maximum number of relations allowed in NITCBase is 18
+
+# Maybe errors
+- Caution at the end of the stage the total number of attributes can be 20 not till 19

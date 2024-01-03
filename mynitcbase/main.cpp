@@ -4,15 +4,15 @@
 #include "FrontendInterface/FrontendInterface.h"
 #include "define/constants.h"
 #include <iostream>
+#include <string.h>
 
 int main(int argc, char *argv[]) {
 
   // creating run copy of the disk
   Disk disk_run;
 
-  // create objects for the relation catalog and attribute catalog
+  // create objects for the relation catalog
   RecBuffer relCatBuffer(RELCAT_BLOCK);
-  RecBuffer attrCatBuffer(ATTRCAT_BLOCK);
 
   HeadInfo relCatHeader;
   HeadInfo attrCatHeader;
@@ -20,7 +20,6 @@ int main(int argc, char *argv[]) {
   // load the headers of both the blocks into relCatHeader and attrCatHeader.
   // (we will implement these functions later)
   relCatBuffer.getHeader(&relCatHeader);
-  attrCatBuffer.getHeader(&attrCatHeader);
 
   for (int i = 0; i < relCatHeader.numEntries; i++) {
 
@@ -32,22 +31,34 @@ int main(int argc, char *argv[]) {
 
     printf("Relation: %s\n", relCatRecord[RELCAT_REL_NAME_INDEX].sVal);
 
-    for (int j = 0; j < attrCatHeader.numEntries; j++) {
+    // create object for the  attribute catalog
+    // nextblock to be read in attribute catalog
+    int nextBlock = ATTRCAT_BLOCK;
 
-      // declare attrCatRecord and load the attribute catalog entry into it
-      Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
+    while (nextBlock != INVALID_BLOCKNUM) {
 
-      attrCatBuffer.getRecord(attrCatRecord, j);
+      RecBuffer attrCatBuffer(nextBlock);
+      attrCatBuffer.getHeader(&attrCatHeader);
+      for (int j = 0; j < attrCatHeader.numEntries; j++) {
 
-      if (strcmp(attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal,
-                 relCatRecord[RELCAT_REL_NAME_INDEX].sVal) == 0) {
-        const char *attrType =
-            attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM"
-                                                                  : "STR";
-        printf("  %s: %s\n", attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,
-               attrType);
+        // declare attrCatRecord and load the attribute catalog entry into it
+        Attribute attrCatRecord[ATTRCAT_NO_ATTRS];
+
+        attrCatBuffer.getRecord(attrCatRecord, j);
+
+        if (strcmp(attrCatRecord[ATTRCAT_REL_NAME_INDEX].sVal,
+                   relCatRecord[RELCAT_REL_NAME_INDEX].sVal) == 0) {
+          const char *attrType =
+              attrCatRecord[ATTRCAT_ATTR_TYPE_INDEX].nVal == NUMBER ? "NUM"
+                                                                    : "STR";
+          printf("  %s: %s\n", attrCatRecord[ATTRCAT_ATTR_NAME_INDEX].sVal,
+                 attrType);
+        }
       }
+
+      nextBlock = attrCatHeader.rblock;
     }
+
     printf("\n");
   }
 
