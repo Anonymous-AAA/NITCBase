@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
 
   // creating run copy of the disk
   Disk disk_run;
+  StaticBuffer buffer;
 
   // create objects for the relation catalog
   RecBuffer relCatBuffer(RELCAT_BLOCK);
