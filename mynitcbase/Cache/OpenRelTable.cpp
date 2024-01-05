@@ -4,6 +4,8 @@
 
 #include <cstdlib>
 #include <cstring>
+#define STUDENTS_RELID 2              // relid for students relation
+#define RELCAT_SLOTNUM_FOR_STUDENTS 2 // slot num for student relation is 2
 
 OpenRelTable::OpenRelTable() {
 
@@ -47,6 +49,16 @@ OpenRelTable::OpenRelTable() {
   RelCacheTable::relCache[ATTRCAT_RELID] =
       (struct RelCacheEntry *)malloc(sizeof(RelCacheEntry));
   *(RelCacheTable::relCache[ATTRCAT_RELID]) = relCacheEntry;
+
+  /**** setting up  Students relation in the Relation Cache Table ****/
+  relCatBlock.getRecord(relCatRecord, RELCAT_SLOTNUM_FOR_STUDENTS);
+  RelCacheTable::recordToRelCatEntry(relCatRecord, &relCacheEntry.relCatEntry);
+  int noOfAttributes = relCacheEntry.relCatEntry.numAttrs;
+  relCacheEntry.recId.block = RELCAT_BLOCK;
+  relCacheEntry.recId.slot = RELCAT_SLOTNUM_FOR_STUDENTS;
+  RelCacheTable::relCache[STUDENTS_RELID] =
+      (struct RelCacheEntry *)malloc(sizeof(RelCacheEntry));
+  *(RelCacheTable::relCache[STUDENTS_RELID]) = relCacheEntry;
 
   /************ Setting up Attribute cache entries ************/
   // (we need to populate attribute cache with entries for the relation catalog
@@ -122,6 +134,37 @@ OpenRelTable::OpenRelTable() {
 
   // set the value at AttrCacheTable::attrCache[ATTRCAT_RELID]
   AttrCacheTable::attrCache[ATTRCAT_RELID] = head;
+
+  /**** setting up Students relation in the Attribute Cache Table ****/
+
+  // set up the attributes of the attribute cache similarly.
+  head = nullptr;
+
+  // noOfAttributes in Students relation calculated when entered in relCache
+  // table
+  for (int slotNum = RELCAT_NO_ATTRS + ATTRCAT_NO_ATTRS;
+       slotNum < RELCAT_NO_ATTRS + ATTRCAT_NO_ATTRS + noOfAttributes;
+       slotNum++) {
+    attrCatBlock.getRecord(attrCatRecord, slotNum);
+    AttrCacheTable::recordToAttrCatEntry(attrCatRecord,
+                                         &attrCacheEntry.attrCatEntry);
+    attrCacheEntry.recId.block = ATTRCAT_BLOCK;
+    attrCacheEntry.recId.slot = slotNum;
+
+    curr = (struct AttrCacheEntry *)malloc(sizeof(AttrCacheEntry));
+    *curr = attrCacheEntry;
+
+    if (head == nullptr) {
+      head = curr;
+    } else {
+      prev->next = curr;
+    }
+
+    prev = curr;
+  }
+
+  // set the value at AttrCacheTable::attrCache[ATTRCAT_RELID]
+  AttrCacheTable::attrCache[STUDENTS_RELID] = head;
 }
 
 OpenRelTable::~OpenRelTable() {
@@ -129,6 +172,7 @@ OpenRelTable::~OpenRelTable() {
 
   free(RelCacheTable::relCache[RELCAT_RELID]);
   free(RelCacheTable::relCache[ATTRCAT_RELID]);
+  free(RelCacheTable::relCache[STUDENTS_RELID]);
 
   struct AttrCacheEntry *curr;
   struct AttrCacheEntry *next;
@@ -142,6 +186,14 @@ OpenRelTable::~OpenRelTable() {
   }
 
   curr = AttrCacheTable::attrCache[ATTRCAT_RELID];
+
+  while (curr) {
+    next = curr->next;
+    free(curr);
+    curr = next;
+  }
+
+  curr = AttrCacheTable::attrCache[STUDENTS_RELID];
 
   while (curr) {
     next = curr->next;
