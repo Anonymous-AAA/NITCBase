@@ -1,4 +1,5 @@
 #include "OpenRelTable.h"
+#include "AttrCacheTable.h"
 #include "RelCacheTable.h"
 
 #include <cstdlib>
@@ -63,18 +64,88 @@ OpenRelTable::OpenRelTable() {
   //    and attrCacheEntry.next appropriately
   // NOTE: allocate each entry dynamically using malloc
 
-  // set the next field in the last entry to nullptr
+  struct AttrCacheEntry attrCacheEntry;
+  struct AttrCacheEntry *prev = nullptr;
+  struct AttrCacheEntry *curr = nullptr;
+  struct AttrCacheEntry *head = nullptr;
 
-  AttrCacheTable::attrCache[RELCAT_RELID] = /* head of the linked list */;
+  for (int slotNum = 0; slotNum < RELCAT_NO_ATTRS; slotNum++) {
+
+    attrCatBlock.getRecord(attrCatRecord, slotNum);
+    AttrCacheTable::recordToAttrCatEntry(attrCatRecord,
+                                         &attrCacheEntry.attrCatEntry);
+    attrCacheEntry.recId.block = ATTRCAT_BLOCK;
+    attrCacheEntry.recId.slot = slotNum;
+
+    curr = (struct AttrCacheEntry *)malloc(sizeof(AttrCacheEntry));
+    *curr = attrCacheEntry;
+
+    if (head == nullptr) {
+      head = curr;
+    } else {
+      prev->next = curr;
+    }
+
+    prev = curr;
+  }
+
+  // set the next field in the last entry to nullptr
+  curr->next = nullptr;
+
+  AttrCacheTable::attrCache[RELCAT_RELID] = head;
 
   /**** setting up Attribute Catalog relation in the Attribute Cache Table ****/
 
   // set up the attributes of the attribute cache similarly.
   // read slots 6-11 from attrCatBlock and initialise recId appropriately
+  head = nullptr;
+
+  for (int slotNum = RELCAT_NO_ATTRS;
+       slotNum < RELCAT_NO_ATTRS + ATTRCAT_NO_ATTRS; slotNum++) {
+    attrCatBlock.getRecord(attrCatRecord, slotNum);
+    AttrCacheTable::recordToAttrCatEntry(attrCatRecord,
+                                         &attrCacheEntry.attrCatEntry);
+    attrCacheEntry.recId.block = ATTRCAT_BLOCK;
+    attrCacheEntry.recId.slot = slotNum;
+
+    curr = (struct AttrCacheEntry *)malloc(sizeof(AttrCacheEntry));
+    *curr = attrCacheEntry;
+
+    if (head == nullptr) {
+      head = curr;
+    } else {
+      prev->next = curr;
+    }
+
+    prev = curr;
+  }
 
   // set the value at AttrCacheTable::attrCache[ATTRCAT_RELID]
+  AttrCacheTable::attrCache[ATTRCAT_RELID] = head;
 }
 
 OpenRelTable::~OpenRelTable() {
   // free all the memory that you allocated in the constructor
+
+  free(RelCacheTable::relCache[RELCAT_RELID]);
+  free(RelCacheTable::relCache[ATTRCAT_RELID]);
+
+  struct AttrCacheEntry *curr;
+  struct AttrCacheEntry *next;
+
+  curr = AttrCacheTable::attrCache[RELCAT_RELID];
+
+  while (curr) {
+    next = curr->next;
+    free(curr);
+    curr = next;
+  }
+
+  curr = AttrCacheTable::attrCache[ATTRCAT_RELID];
+
+  while (curr) {
+    next = curr->next;
+    free(curr);
+    curr = next;
+  }
 }

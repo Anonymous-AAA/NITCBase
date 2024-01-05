@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
       printf("  %s: %s\n", attrCatBuf.attrName,
              attrCatBuf.attrType == NUMBER ? "NUM" : "STR");
     }
+    printf("\n");
   }
 
   // // create objects for the relation catalog
