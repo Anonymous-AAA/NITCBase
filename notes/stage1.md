@@ -23,7 +23,7 @@
 
 # Disk Class
 - NITCBase is a collection of relations and each relation is a collection of records
-- Each relation is stored a stored as a set of blocks in disk organized as a linked list.
+- Each relation is stored as a set of blocks in disk organized as a linked list.
 - Each such block is called a record block.
 - Records consists of attributes of fixed size - 16 bytes, but the records of a relation can be of variable size (from 16 bytes to largest record that can fit into a block)
 - Each record block is divided into slots of variable record size, each slot stores a single record.
