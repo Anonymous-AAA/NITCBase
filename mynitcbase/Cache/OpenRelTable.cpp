@@ -216,6 +216,8 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
     return RELCAT_RELID;
   } else if (strcmp(relName, ATTRCAT_RELNAME) == 0) {
     return ATTRCAT_RELID;
+  } else if (strcmp(relName, "Students") == 0) {
+    return STUDENTS_RELID;
   }
 
   return E_RELNOTOPEN;
