@@ -1,8 +1,10 @@
 #include "Algebra.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
+bool isNumber(char *str);
 /* used to select all the records that satisfy a condition.
 the arguments of the function are
 - srcRel - the source relation we want to select from
@@ -85,8 +87,32 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
     if (searchRes.block != -1 && searchRes.slot != -1) {
 
       // get the record at searchRes using BlockBuffer.getRecord
+      RecBuffer recBlock(searchRes.block);
+      Attribute record[relCatEntry.numAttrs];
+      ret = recBlock.getRecord(record, searchRes.slot);
+      if (ret != SUCCESS) {
+        return ret;
+      }
 
       // print the attribute values in the same format as above
+      printf("|");
+      for (int i = 0; i < relCatEntry.numAttrs; ++i) {
+        AttrCatEntry attrCatEntry;
+        // get attrCatEntry at offset i using AttrCacheTable::getAttrCatEntry()
+
+        // feels inefficient
+        ret = AttrCacheTable::getAttrCatEntry(srcRelId, i, &attrCatEntry);
+        if (ret != SUCCESS) {
+          return ret;
+        }
+
+        if (attrCatEntry.attrType == STRING) {
+          printf(" %s |", record[i].sVal);
+        } else {
+          printf(" %lf |", record[i].nVal);
+        }
+      }
+      printf("\n");
 
     } else {
 

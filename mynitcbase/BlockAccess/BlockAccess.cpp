@@ -71,7 +71,9 @@ RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE],
     // block)
     if (slot >= head.numSlots) {
       // update block = right block of block
-      block++;
+      HeadInfo header;
+      recBlock.getHeader(&header);
+      block = header.rblock;
       // update slot = 0
       slot = 0;
       continue; // continue to the beginning of this while loop
