@@ -322,6 +322,11 @@ int BlockAccess::renameAttribute(char relName[ATTR_SIZE],
        attrToRenameRecId.slot */
   //   update the AttrName of the record with newName
   //   set back the record with RecBuffer.setRecord
+  RecBuffer recBuffer(attrToRenameRecId.block);
+  recBuffer.getRecord(attrCatEntryRecord, attrToRenameRecId.slot);
+
+  strcpy(attrCatEntryRecord[ATTRCAT_ATTR_NAME_INDEX].sVal, newName);
+  recBuffer.setRecord(attrCatEntryRecord, attrToRenameRecId.slot);
 
   return SUCCESS;
 }
