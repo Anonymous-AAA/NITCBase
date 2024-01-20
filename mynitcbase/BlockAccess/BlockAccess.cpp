@@ -185,21 +185,13 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE],
   */
   Attribute relcatRec[RELCAT_NO_ATTRS];
   RecBuffer recBuffer(RELCAT_BLOCK);
-  int retVal = recBuffer.getRecord(relcatRec, recId.slot);
-
-  if (retVal != SUCCESS) {
-    return retVal;
-  }
+  recBuffer.getRecord(relcatRec, recId.slot);
 
   /* update the relation name attribute in the record with newName.
      (use RELCAT_REL_NAME_INDEX) */
   strcpy(relcatRec[RELCAT_REL_NAME_INDEX].sVal, newName);
   // set back the record value using RecBuffer.setRecord
-  retVal = recBuffer.setRecord(relcatRec, recId.slot);
-
-  if (retVal != SUCCESS) {
-    return retVal;
-  }
+  recBuffer.setRecord(relcatRec, recId.slot);
 
   /*
   update all the attribute catalog entries in the attribute catalog
@@ -226,18 +218,10 @@ int BlockAccess::renameRelation(char oldName[ATTR_SIZE],
                                       oldRelationName, EQ);
     RecBuffer recBuffer(recId.block);
     Attribute attrCatRec[ATTRCAT_NO_ATTRS];
-    retVal = recBuffer.getRecord(attrCatRec, recId.slot);
-
-    if (retVal != SUCCESS) {
-      return retVal;
-    }
+    recBuffer.getRecord(attrCatRec, recId.slot);
 
     strcpy(attrCatRec[ATTRCAT_REL_NAME_INDEX].sVal, newName);
-    retVal = recBuffer.setRecord(attrCatRec, recId.slot);
-
-    if (retVal != SUCCESS) {
-      return retVal;
-    }
+    recBuffer.setRecord(attrCatRec, recId.slot);
   }
 
   return SUCCESS;

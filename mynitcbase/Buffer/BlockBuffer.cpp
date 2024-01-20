@@ -1,4 +1,5 @@
 #include "BlockBuffer.h"
+#include "StaticBuffer.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -70,16 +71,43 @@ int RecBuffer::getRecord(union Attribute *rec, int slotNum) {
   return SUCCESS;
 }
 
-/*
-Used to load a block to the buffer and get a pointer to it.
-NOTE: this function expects the caller to allocate memory for the argument
-*/
+/* NOTE: This function will NOT check if the block has been initialised as a
+   record or an index block. It will copy whatever content is there in that
+   disk block to the buffer.
+   Also ensure that all the methods accessing and updating the block's data
+   should call the loadBlockAndGetBufferPtr() function before the access or
+   update is done. This is because the block might not be present in the
+   buffer due to LRU buffer replacement. So, it will need to be bought back
+   to the buffer before any operations can be done.
+ */
 int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **buffPtr) {
-  // check whether the block is already present in the buffer using
-  // StaticBuffer.getBufferNum()
+  /* check whether the block is already present in the buffer
+     using StaticBuffer.getBufferNum() */
   int bufferNum = StaticBuffer::getBufferNum(this->blockNum);
 
-  if (bufferNum == E_BLOCKNOTINBUFFER) {
+  // if present (!=E_BLOCKNOTINBUFFER),
+  // set the timestamp of the corresponding buffer to 0 and increment the
+  // timestamps of all other occupied buffers in BufferMetaInfo.
+  if (bufferNum != E_BLOCKNOTINBUFFER) {
+
+    StaticBuffer::metainfo[bufferNum].timeStamp = 0;
+
+    for (int i = 0; i < BUFFER_CAPACITY; i++) {
+
+      if (!StaticBuffer::metainfo[i].free && i != bufferNum) {
+        StaticBuffer::metainfo[i].timeStamp++;
+      }
+    }
+  } else {
+
+    // else
+    // get a free buffer using StaticBuffer.getFreeBuffer()
+
+    // if the call returns E_OUTOFBOUND, return E_OUTOFBOUND here as
+    // the blockNum is invalid
+
+    // Read the block into the free buffer using readBlock()
+
     bufferNum = StaticBuffer::getFreeBuffer(this->blockNum);
 
     if (bufferNum == E_OUTOFBOUND) {
@@ -90,8 +118,8 @@ int BlockBuffer::loadBlockAndGetBufferPtr(unsigned char **buffPtr) {
   }
 
   // store the pointer to this buffer (blocks[bufferNum]) in *buffPtr
+  // return SUCCESS;
   *buffPtr = StaticBuffer::blocks[bufferNum];
-
   return SUCCESS;
 }
 
@@ -149,4 +177,54 @@ int compareAttrs(union Attribute attr1, union Attribute attr2, int attrType) {
   } else {
     return 0;
   }
+}
+
+int RecBuffer::setRecord(union Attribute *rec, int slotNum) {
+  unsigned char *bufferPtr;
+  /* get the starting address of the buffer containing the block
+     using loadBlockAndGetBufferPtr(&bufferPtr). */
+  int retVal = loadBlockAndGetBufferPtr(&bufferPtr);
+
+  // if loadBlockAndGetBufferPtr(&bufferPtr) != SUCCESS
+  // return the value returned by the call.
+  if (retVal != SUCCESS) {
+    return retVal;
+  }
+
+  /* get the header of the block using the getHeader() function */
+  HeadInfo header;
+  getHeader(&header);
+
+  // get number of attributes in the block.
+  int numAttrs = header.numAttrs;
+
+  // get the number of slots in the block.
+  int numSlots = header.numSlots;
+
+  // if input slotNum is not in the permitted range return E_OUTOFBOUND.
+  if (slotNum < 0 || slotNum >= numSlots) {
+    return E_OUTOFBOUND;
+  }
+
+  /* offset bufferPtr to point to the beginning of the record at required
+     slot. the block contains the header, the slotmap, followed by all
+     the records. so, for example,
+     record at slot x will be at bufferPtr + HEADER_SIZE + (x*recordSize)
+     copy the record from `rec` to buffer using memcpy
+     (hint: a record will be of size ATTR_SIZE * numAttrs)
+  */
+  int recordSize = numAttrs * ATTR_SIZE;
+  unsigned char *slotPointer =
+      bufferPtr + HEADER_SIZE + numSlots + (recordSize * slotNum);
+  memcpy(slotPointer, rec, recordSize);
+
+  // update dirty bit using setDirtyBit()
+  StaticBuffer::setDirtyBit(this->blockNum);
+
+  /* (the above function call should not fail since the block is already
+     in buffer and the blockNum is valid. If the call does fail, there
+     exists some other issue in the code) */
+
+  // return SUCCESS
+  return SUCCESS;
 }
