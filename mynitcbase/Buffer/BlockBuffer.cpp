@@ -1,7 +1,6 @@
 #include "BlockBuffer.h"
 #include "StaticBuffer.h"
 
-#include <cstdlib>
 #include <cstring>
 
 // the declarations for these functions can be found in "BlockBuffer.h"
@@ -378,3 +377,45 @@ BlockBuffer::BlockBuffer(char blockType) {
 
 // call parent non-default constructor with 'R' denoting record block.
 RecBuffer::RecBuffer() : BlockBuffer('R') {}
+
+int RecBuffer::setSlotMap(unsigned char *slotMap) {
+  unsigned char *bufferPtr;
+  /* get the starting address of the buffer containing the block using
+     loadBlockAndGetBufferPtr(&bufferPtr). */
+  int ret = loadBlockAndGetBufferPtr(&bufferPtr);
+
+  // if loadBlockAndGetBufferPtr(&bufferPtr) != SUCCESS
+  // return the value returned by the call.
+  if (ret != SUCCESS) {
+    return ret;
+  }
+
+  // get the header of the block using the getHeader() function
+  HeadInfo header;
+  getHeader(&header);
+
+  /* the number of slots in the block */;
+  int numSlots = header.numSlots;
+
+  // the slotmap starts at bufferPtr + HEADER_SIZE. Copy the contents of the
+  // argument `slotMap` to the buffer replacing the existing slotmap.
+  // Note that size of slotmap is `numSlots`
+  memcpy(bufferPtr + HEADER_SIZE, slotMap, numSlots);
+
+  // update dirty bit using StaticBuffer::setDirtyBit
+  // if setDirtyBit failed, return the value returned by the call
+  ret = StaticBuffer::setDirtyBit(this->blockNum);
+
+  if (ret != SUCCESS) {
+    return ret;
+  }
+
+  // return SUCCESS
+  return SUCCESS;
+}
+
+int BlockBuffer::getBlockNum() {
+
+  // return corresponding block number.
+  return this->blockNum;
+}
