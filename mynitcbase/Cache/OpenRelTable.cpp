@@ -183,7 +183,8 @@ int OpenRelTable::getRelId(char relName[ATTR_SIZE]) {
   /* traverse through the tableMetaInfo array,
       find the entry in the Open Relation Table corresponding to relName.*/
   for (int i = 0; i < MAX_OPEN; i++) {
-    if (strcmp(relName, OpenRelTable::tableMetaInfo[i].relName) == 0) {
+    if (!tableMetaInfo[i].free && // changes made here
+        strcmp(relName, OpenRelTable::tableMetaInfo[i].relName) == 0) {
       return i;
     }
   }
