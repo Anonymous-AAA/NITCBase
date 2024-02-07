@@ -1,6 +1,6 @@
 #include "Schema.h"
 
-#include <cmath>
+// #include <cmath>
 #include <cstring>
 
 int Schema::openRel(char relName[ATTR_SIZE]) {

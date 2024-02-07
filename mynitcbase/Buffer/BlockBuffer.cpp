@@ -323,6 +323,7 @@ int BlockBuffer::getFreeBlock(int blockType) {
   this->blockNum = blockNum;
 
   // find a free buffer using StaticBuffer::getFreeBuffer() .
+  // this may not be necessary ?
   int buffer = StaticBuffer::getFreeBuffer(blockNum);
 
   // initialize the header of the block passing a struct HeadInfo with values

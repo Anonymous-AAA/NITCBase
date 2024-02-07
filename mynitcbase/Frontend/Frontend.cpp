@@ -1,7 +1,7 @@
 #include "Frontend.h"
 
-#include <cstring>
-#include <iostream>
+// #include <cstring>
+// #include <iostream>
 
 int Frontend::create_table(char relname[ATTR_SIZE], int no_attrs,
                            char attributes[][ATTR_SIZE], int type_attrs[]) {
