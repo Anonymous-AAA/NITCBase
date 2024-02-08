@@ -190,3 +190,35 @@ int createRel(char relName[], int nAttrs, char attrs[][ATTR_SIZE],
   // return SUCCESS
   return SUCCESS;
 }
+
+int Schema::deleteRel(char *relName) {
+  // if the relation to delete is either Relation Catalog or Attribute Catalog,
+  //     return E_NOTPERMITTED
+  // (check if the relation names are either "RELATIONCAT" and "ATTRIBUTECAT".
+  // you may use the following constants: RELCAT_RELNAME and ATTRCAT_RELNAME)
+  if (!strcmp(relName, RELCAT_RELNAME) || !strcmp(relName, ATTRCAT_RELNAME)) {
+    return E_NOTPERMITTED;
+  }
+
+  // get the rel-id using appropriate method of OpenRelTable class by
+  // passing relation name as argument
+  int relId = OpenRelTable::getRelId(relName);
+
+  // if relation is opened in open relation table, return E_RELOPEN
+  if (relId != E_RELNOTOPEN) {
+    return E_RELOPEN;
+  }
+
+  // Call BlockAccess::deleteRelation() with appropriate argument.
+  int ret = BlockAccess::deleteRelation(relName);
+
+  // return the value returned by the above deleteRelation() call
+  return ret;
+
+  /* the only that should be returned from deleteRelation() is E_RELNOTEXIST.
+     The deleteRelation call may return E_OUTOFBOUND from the call to
+     loadBlockAndGetBufferPtr, but if your implementation so far has been
+     correct, it should not reach that point. That error could only occur
+     if the BlockBuffer was initialized with an invalid block number.
+  */
+}
