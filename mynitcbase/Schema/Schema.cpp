@@ -86,13 +86,13 @@ int Schema::renameAttr(char *relName, char *oldAttrName, char *newAttrName) {
   return retVal;
 }
 
-int createRel(char relName[], int nAttrs, char attrs[][ATTR_SIZE],
-              int attrtype[]) {
+int Schema::createRel(char relName[], int nAttrs, char attrs[][ATTR_SIZE],
+                      int attrtype[]) {
 
   // declare variable relNameAsAttribute of type Attribute
   // copy the relName into relNameAsAttribute.sVal
   Attribute relNameAsAttribute;
-  strcpy(relNameAsAttribute.sVal, relNameAsAttribute.sVal);
+  strcpy(relNameAsAttribute.sVal, relName);
 
   // declare a variable targetRelId of type RecId
   RecId targetRelId;

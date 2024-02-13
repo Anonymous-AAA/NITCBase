@@ -731,26 +731,31 @@ int BlockAccess::deleteRelation(char relName[ATTR_SIZE]) {
 
       } else {
         // (the block being released is the "Last Block" of the relation.)
-        // TODO change here to use cache
+        // DONE :- change here to use cache
         /* update the Relation Catalog entry's LastBlock field for this
            relation with the block number of the previous block. */
-        Attribute relCatEntry[RELCAT_NO_ATTRS];
-        RecBuffer attrCatEntryInRelCat(RELCAT_BLOCK);
-        ret = attrCatEntryInRelCat.getRecord(relCatEntry,
-                                             RELCAT_SLOTNUM_FOR_ATTRCAT);
 
-        if (ret != SUCCESS) {
-          return ret;
-        }
-
-        relCatEntry[RELCAT_LAST_BLOCK_INDEX].nVal = header.lblock;
-
-        ret = attrCatEntryInRelCat.setRecord(relCatEntry,
-                                             RELCAT_SLOTNUM_FOR_ATTRCAT);
-
-        if (ret != SUCCESS) {
-          return ret;
-        }
+        // Attribute relCatEntry[RELCAT_NO_ATTRS];
+        // RecBuffer attrCatEntryInRelCat(RELCAT_BLOCK);
+        // ret = attrCatEntryInRelCat.getRecord(relCatEntry,
+        //                                      RELCAT_SLOTNUM_FOR_ATTRCAT);
+        //
+        // if (ret != SUCCESS) {
+        //   return ret;
+        // }
+        //
+        // relCatEntry[RELCAT_LAST_BLOCK_INDEX].nVal = header.lblock;
+        //
+        // ret = attrCatEntryInRelCat.setRecord(relCatEntry,
+        //                                      RELCAT_SLOTNUM_FOR_ATTRCAT);
+        //
+        // if (ret != SUCCESS) {
+        //   return ret;
+        // }
+        RelCatEntry relCatEntry;
+        RelCacheTable::getRelCatEntry(ATTRCAT_RELID, &relCatEntry);
+        relCatEntry.lastBlk = header.lblock;
+        RelCacheTable::setRelCatEntry(ATTRCAT_RELID, &relCatEntry);
       }
 
       // (Since the attribute catalog will never be empty(why?), we do not
