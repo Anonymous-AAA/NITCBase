@@ -4,3 +4,4 @@
 
 # Mistakes I made
 1. Linker error due to not providing the scope resolution in Schema::createRel
+2. Not properly assigning blocktype in getHeader function in BlockBuffer

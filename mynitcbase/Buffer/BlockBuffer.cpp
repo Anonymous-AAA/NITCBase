@@ -25,11 +25,14 @@ int BlockBuffer::getHeader(struct HeadInfo *head) {
   }
 
   // populate the numEntries, numAttrs and numSlots fields in *head
-  memcpy(&head->numSlots, bufferPtr + 24, 4);
+  memcpy(&head->blockType, bufferPtr, 4);
+  memcpy(&head->pblock, bufferPtr + 4, 4);
+  memcpy(&head->lblock, bufferPtr + 8, 4);
+  memcpy(&head->rblock, bufferPtr + 12, 4);
   memcpy(&head->numEntries, bufferPtr + 16, 4);
   memcpy(&head->numAttrs, bufferPtr + 20, 4);
-  memcpy(&head->rblock, bufferPtr + 12, 4);
-  memcpy(&head->lblock, bufferPtr + 8, 4);
+  memcpy(&head->numSlots, bufferPtr + 24, 4);
+  memcpy(&head->reserved, bufferPtr + 28, 4);
 
   return SUCCESS;
 }
@@ -247,13 +250,13 @@ int BlockBuffer::setHeader(struct HeadInfo *head) {
   // copy the fields of the HeadInfo pointed to by head (except reserved) to
   // the header of the block (pointed to by bufferHeader)
   //(hint: bufferHeader->numSlots = head->numSlots )
-  bufferHeader->lblock = head->lblock;
+  bufferHeader->blockType = head->blockType;
   bufferHeader->pblock = head->pblock;
+  bufferHeader->lblock = head->lblock;
   bufferHeader->rblock = head->rblock;
+  bufferHeader->numEntries = head->numEntries;
   bufferHeader->numAttrs = head->numAttrs;
   bufferHeader->numSlots = head->numSlots;
-  bufferHeader->blockType = head->blockType;
-  bufferHeader->numEntries = head->numEntries;
 
   // update dirty bit by calling StaticBuffer::setDirtyBit()
   // if setDirtyBit() failed, return the error code
