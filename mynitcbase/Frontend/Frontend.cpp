@@ -56,7 +56,8 @@ int Frontend::insert_into_table_values(char relname[ATTR_SIZE], int attr_count,
 int Frontend::select_from_table(char relname_source[ATTR_SIZE],
                                 char relname_target[ATTR_SIZE]) {
   // Algebra::project
-  return SUCCESS;
+  // return SUCCESS;
+  return Algebra::project(relname_source, relname_target);
 }
 
 int Frontend::select_attrlist_from_table(char relname_source[ATTR_SIZE],
@@ -64,7 +65,9 @@ int Frontend::select_attrlist_from_table(char relname_source[ATTR_SIZE],
                                          int attr_count,
                                          char attr_list[][ATTR_SIZE]) {
   // Algebra::project
-  return SUCCESS;
+  // return SUCCESS;
+  return Algebra::project(relname_source, relname_target, attr_count,
+                          attr_list);
 }
 
 int Frontend::select_from_table_where(char relname_source[ATTR_SIZE],
@@ -81,8 +84,40 @@ int Frontend::select_attrlist_from_table_where(char relname_source[ATTR_SIZE],
                                                char attr_list[][ATTR_SIZE],
                                                char attribute[ATTR_SIZE],
                                                int op, char value[ATTR_SIZE]) {
-  // Algebra::select + Algebra::project??
-  return SUCCESS;
+
+  // Call select() method of the Algebra Layer with correct arguments to
+  // create a temporary target relation with name ".temp" (use constant TEMP)
+  int ret = Algebra::select(relname_source, TEMP, attribute, op, value);
+
+  // TEMP will contain all the attributes of the source relation as it is the
+  // result of a select operation
+
+  // Return Error values, if not successful
+  if (ret != SUCCESS) {
+    return ret;
+  }
+
+  // Open the TEMP relation using OpenRelTable::openRel()
+  // if open fails, delete TEMP relation using Schema::deleteRel() and
+  // return the error code
+  int tempRelId = OpenRelTable::openRel(TEMP);
+  if (tempRelId < 0) {
+    Schema::deleteRel(TEMP);
+    return tempRelId;
+  }
+
+  // On the TEMP relation, call project() method of the Algebra Layer with
+  // correct arguments to create the actual target relation. The final
+  // target relation contains only those attributes mentioned in attr_list
+  ret = Algebra::project(TEMP, relname_target, attr_count, attr_list);
+
+  // close the TEMP relation using OpenRelTable::closeRel()
+  // delete the TEMP relation using Schema::deleteRel()
+  OpenRelTable::closeRel(tempRelId);
+  Schema::deleteRel(TEMP);
+
+  // return any error codes from project() or SUCCESS otherwise
+  return ret;
 }
 
 int Frontend::select_from_join_where(char relname_source_one[ATTR_SIZE],
