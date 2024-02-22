@@ -11,3 +11,7 @@ A. Yes, we are doing it.
 # Solved errors
 1. The header of the blocks of relcat and attrcat are messed up.
     - Issue was with getHeader which returned garbage value for blocktype as it was not initialized
+
+# Errors
+1. Crash in select while using targetrel as BigNumbersInd.
+2. Wrong result in select

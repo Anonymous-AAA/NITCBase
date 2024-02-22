@@ -132,7 +132,7 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE],
 
       if (op == EQ || op == GE) {
 
-        for (int i = index; i < MAX_KEYS_INTERNAL; i++) {
+        for (int i = index; i < intHead.numEntries; i++) {
           internalBlk.getEntry(&intEntry, i);
           if (compareAttrs(intEntry.attrVal, attrVal, attrCatEntry.attrType) >=
               0) {
@@ -142,7 +142,7 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE],
         }
       } else {
 
-        for (int i = index; i < MAX_KEYS_INTERNAL; i++) {
+        for (int i = index; i < intHead.numEntries; i++) {
           internalBlk.getEntry(&intEntry, i);
           if (compareAttrs(intEntry.attrVal, attrVal, attrCatEntry.attrType) >
               0) {
