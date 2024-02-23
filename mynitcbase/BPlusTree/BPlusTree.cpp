@@ -47,7 +47,7 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE],
     HeadInfo leafHead;
 
     // load header into leafHead using BlockBuffer::getHeader().
-    leaf.setHeader(&leafHead);
+    leaf.getHeader(&leafHead);
 
     if (index >= leafHead.numEntries) {
       /* (all the entries in the block has been searched; search from the
