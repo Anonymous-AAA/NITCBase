@@ -3,6 +3,7 @@
 #include <cstring>
 
 RelCacheEntry *RelCacheTable::relCache[MAX_OPEN];
+int RelCacheTable::comparisons = 0;
 
 /*
 Get the relation catalog entry for the relation with rel-id `relId` from the
