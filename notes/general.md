@@ -6,6 +6,7 @@ A. Yes, it combines common functionalities required by both attribute cache and 
 1. In BlockAccess::insert while adding a new block to the relation we dont update lblock of the new block ?
 A. Yes, we are doing it.
 2. Stage 8 doubt ?
+A. Yeah we have to add to the caches
 
 
 # Solved errors
@@ -15,3 +16,6 @@ A. Yes, we are doing it.
 # Errors
 1. Crash in select while using targetrel as BigNumbersInd.
 2. Wrong result in select
+
+# Notes
+1. In B-tree , a record pointer is present at every entry. This is a disadvantage because it reduces the number of entries that can be stored in a single node. It also increases the number of levels in the tree thereby increasing the complexity of the search. A solution to this problem is B+ Tree.
