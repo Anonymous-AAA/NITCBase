@@ -501,7 +501,38 @@ int BlockAccess::insert(int relId, Attribute *record) {
   relCatEntry.numRecs++;
   RelCacheTable::setRelCatEntry(relId, &relCatEntry);
 
-  return SUCCESS;
+  /* B+ Tree Insertions */
+  // (the following section is only relevant once indexing has been implemented)
+
+  int flag = SUCCESS;
+  // Iterate over all the attributes of the relation
+  // (let attrOffset be iterator ranging from 0 to numOfAttributes-1)
+  for (int attrOffset = 0; attrOffset < numOfAttributes; attrOffset++) {
+    // get the attribute catalog entry for the attribute from the attribute
+    // cache (use AttrCacheTable::getAttrCatEntry() with args relId and
+    // attrOffset)
+    AttrCatEntry attrCatEntry;
+    AttrCacheTable::getAttrCatEntry(relId, attrOffset, &attrCatEntry);
+
+    // get the root block field from the attribute catalog entry
+    int rootBlock = attrCatEntry.rootBlock;
+
+    // if index exists for the attribute(i.e. rootBlock != -1)
+    if (rootBlock != INVALID_BLOCKNUM) {
+      /* insert the new record into the attribute's bplus tree using
+       BPlusTree::bPlusInsert()*/
+      int retVal = BPlusTree::bPlusInsert(relId, attrCatEntry.attrName,
+                                          record[attrOffset], rec_id);
+
+      if (retVal == E_DISKFULL) {
+        //(index for this attribute has been destroyed)
+        // flag = E_INDEX_BLOCKS_RELEASED
+        flag = E_INDEX_BLOCKS_RELEASED;
+      }
+    }
+  }
+
+  return flag;
 }
 
 /*
@@ -681,7 +712,7 @@ int BlockAccess::deleteRelation(char relName[ATTR_SIZE]) {
     // block field from the attribute catalog record.
     int rootBlock = AttrCatRec[ATTRCAT_ROOT_BLOCK_INDEX]
                         .nVal; /* get root block from the record */
-    ;
+
     // (This will be used later to delete any indexes if it exists)
 
     // Update the Slotmap for the block by setting the slot as SLOT_UNOCCUPIED
@@ -799,6 +830,7 @@ int BlockAccess::deleteRelation(char relName[ATTR_SIZE]) {
     if (rootBlock != -1) {
       // delete the bplus tree rooted at rootBlock using
       // BPlusTree::bPlusDestroy()
+      BPlusTree::bPlusDestroy(rootBlock);
     }
   }
 
