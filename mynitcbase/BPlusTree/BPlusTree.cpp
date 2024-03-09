@@ -436,6 +436,10 @@ int BPlusTree::bPlusInsert(int relId, char attrName[ATTR_SIZE],
   //       required internal nodes by calling the required helper functions
   //       like insertIntoInternal() or createNewRoot()
   Index leafEntry;
+  // My next mistake, did not initialize the struct here
+  leafEntry.attrVal = attrVal;
+  leafEntry.block = recId.block;
+  leafEntry.slot = recId.slot;
   ret = insertIntoLeaf(relId, attrName, leafBlkNum, leafEntry);
 
   /*if insertIntoLeaf() returns E_DISKFULL */
@@ -539,7 +543,9 @@ int BPlusTree::insertIntoLeaf(int relId, char attrName[ATTR_SIZE], int blockNum,
 
     Index oldEntry;
     leafBlock.getEntry(&oldEntry, i);
-    int cmp = compareAttrs(indexEntry.attrVal, oldEntry.attrVal,
+
+    // The next mistake I made is here, I swapped oldEntry and indexEntry
+    int cmp = compareAttrs(oldEntry.attrVal, indexEntry.attrVal,
                            attrCatEntry.attrType);
 
     if (cmp >= 0) {
@@ -725,10 +731,11 @@ int BPlusTree::insertIntoInternal(int relId, char attrName[ATTR_SIZE],
   for (int i = 0; i < blockHeader.numEntries; i++) {
     InternalEntry oldEntry;
     intBlk.getEntry(&oldEntry, i);
+    // my next mistake here  (swapped oldEntry and intEntry)
     int cmp =
-        compareAttrs(intEntry.attrVal, oldEntry.attrVal, attrCatEntry.attrType);
+        compareAttrs(oldEntry.attrVal, intEntry.attrVal, attrCatEntry.attrType);
     if (cmp >= 0) {
-      indexToInsert = i; // the mistake I made
+      indexToInsert = i; // the mistake I made was here
       break;
     }
     internalEntries[i] = oldEntry;

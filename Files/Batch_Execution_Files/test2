@@ -1,0 +1,16 @@
+echo Create table QuizMarks
+create table test(rollNo STR, name STR, cgpa NUM, quizMarks NUM, location STR);
+echo
+echo Open table
+open table test
+echo
+echo insert values
+INSERT INTO test VALUES FROM quizmarks.csv
+echo
+echo create index on quizMarks
+CREATE INDEX ON test.quizMarks;
+echo
+echo select students with marks more than 85
+SELECT name,quizMarks  FROM test INTO check WHERE quizMarks>85;
+echo
+echo done

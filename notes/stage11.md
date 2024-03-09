@@ -21,3 +21,6 @@ This function will add the pair (attrVal, recId) to the B+ tree without any vali
 
 # Errors
 1. In documentation they missed to update the attrCache entry for rootblock in BPlusTree::bPlusCreate
+2. BPlustree:731 , I forgot to update
+3. My next mistake at BPlusTree:439, forgot to initialize the struct
+4. Next msitake BPlustree:548,734 
