@@ -728,6 +728,7 @@ int BPlusTree::insertIntoInternal(int relId, char attrName[ATTR_SIZE],
     int cmp =
         compareAttrs(intEntry.attrVal, oldEntry.attrVal, attrCatEntry.attrType);
     if (cmp >= 0) {
+      indexToInsert = i; // the mistake I made
       break;
     }
     internalEntries[i] = oldEntry;
