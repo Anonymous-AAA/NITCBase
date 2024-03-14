@@ -155,21 +155,24 @@ int Frontend::select_attrlist_from_join_where(
   // Open the TEMP relation using OpenRelTable::openRel()
   // if open fails, delete TEMP relation using Schema::deleteRel() and
   // return the error code
-  ret = OpenRelTable::openRel(TEMP);
-  if (ret != SUCCESS) {
+  int tempRelId = OpenRelTable::openRel(TEMP);
+  if (tempRelId < 0) {
     Schema::deleteRel(TEMP);
-    return ret;
+    return tempRelId;
   }
 
   // Call project() method of the Algebra Layer with correct arguments to
   // create the actual target relation from the TEMP relation.
   // (The final target relation contains only those attributes mentioned in
   // attr_list)
+  // reset search index before project (mistake made here)
+  RelCacheTable::resetSearchIndex(tempRelId);
+
   ret = Algebra::project(TEMP, relname_target, attr_count, attr_list);
 
   // close the TEMP relation using OpenRelTable::closeRel()
   // delete the TEMP relation using Schema::deleteRel()
-  OpenRelTable::closeRel(ret);
+  OpenRelTable::closeRel(tempRelId);
   Schema::deleteRel(TEMP);
 
   // Return Success or Error values appropriately

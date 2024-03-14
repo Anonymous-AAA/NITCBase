@@ -1,0 +1,9 @@
+open table Organizers;
+open table Events;
+open table Participants;
+select * from Events join Participants into eve_parts where Events.title=Participants.event;
+open table eve_parts;
+select regNo,location,name from eve_parts join Organizers into result1 where eve_parts.id=Organizers.eventId;
+select * from eve_parts join Organizers into temp1 where eve_parts.id=Organizers.eventId;
+open table temp1;
+select regNo,title from temp1 into result2 where name=Thomas;

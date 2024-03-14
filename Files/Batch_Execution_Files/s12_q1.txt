@@ -1,0 +1,15 @@
+open table Events;
+open table Participants;
+open table Locations;
+select location from Events into EventLocations;
+select regNo,title,location from Events join Participants into People where Events.title=Participants.event;
+open table People;
+select regNo,title from People into AudiPeople where location=Audi;
+select regNo,title,capacity from People join Locations into EventPeople where People.location=Locations.name;
+open table EventPeople;
+select regNo,title,capacity  from EventPeople into Gthund where capacity>100;
+open table Gthund;
+select regNo,title from Gthund into MiniEventPeople where capacity<200;
+ALTER TABLE RENAME EventLocations COLUMN location TO name;
+ALTER TABLE RENAME AudiPeople COLUMN title TO eventName;
+ALTER TABLE RENAME MiniEventPeople COLUMN title TO eventName;

@@ -1,0 +1,3 @@
+create table Organizers(name STR, eventId NUM);
+open table Organizers;
+insert into Organizers values from organizers.csv;
