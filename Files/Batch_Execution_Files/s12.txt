@@ -1,0 +1,5 @@
+open table Events;
+open table Participants;
+open table Locations;
+select location from Events into EventLocations;
+select regNo,title from Events join Participants into AudiPeople where Events.title=Participants.event;
