@@ -136,6 +136,7 @@ int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE],
 
   // Close the targetRel by calling closeRel() method of schema layer
   Schema::closeRel(targetRel);
+  printf("Number of Comparisons: %d\n", RelCacheTable::comparisons);
 
   // return SUCCESS.
   return SUCCESS;
